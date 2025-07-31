@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Enterprise RAG Chatbot</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+      }
+
+      h2 {
+        margin-top: 0;
+        margin-bottom: 16px;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        margin-bottom: 12px;
+        resize: vertical;
+      }
+
+      button {
+        padding: 8px 16px;
+        font-size: 16px;
+        margin-bottom: 12px;
+        cursor: pointer;
+      }
+
+      #response {
+        margin-top: 20px;
+        padding: 15px;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+
+      #fileSection {
+        margin-bottom: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>📄 Tải tài liệu lên</h2>
+    <div id="fileSection">
+      <input type="file" id="fileInput" />
+      <br /><br />
+      <button id="uploadBtn">Tải file lên</button>
+      <div id="uploadResponse"></div>
+    </div>
+
+    <h2>🤖 Đặt câu hỏi về tài liệu</h2>
+    <textarea
+      id="questionInput"
+      rows="3"
+      placeholder="Nhập câu hỏi của bạn..."
+    ></textarea>
+    <br />
+    <button id="askBtn">Gửi câu hỏi</button>
+    <div id="response"></div>
+
+    <script>
+      const fileInput = document.getElementById("fileInput");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const uploadResponse = document.getElementById("uploadResponse");
+      const askBtn = document.getElementById("askBtn");
+      const questionInput = document.getElementById("questionInput");
+      const responseDiv = document.getElementById("response");
+
+      let loadingUpload = false;
+      let loadingAsk = false;
+
+      uploadBtn.addEventListener("click", async () => {
+        const file = fileInput.files[0];
+        if (!file || loadingUpload) return;
+
+        loadingUpload = true;
+        uploadBtn.textContent = "Đang tải lên...";
+        uploadBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const res = await fetch("http://localhost:8000/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            uploadResponse.innerHTML = `<strong>✅ Thành công:</strong> ${result.message}`;
+          } else {
+            uploadResponse.innerHTML = `<strong>❌ Lỗi:</strong> ${
+              result.error || "Tải lên thất bại"
+            }`;
+          }
+        } catch (err) {
+          console.error(err);
+          uploadResponse.innerHTML =
+            "<strong>❌ Lỗi:</strong> Không thể kết nối tới server.";
+        } finally {
+          loadingUpload = false;
+          uploadBtn.textContent = "Tải file lên";
+          uploadBtn.disabled = false;
+        }
+      });
+
+      askBtn.addEventListener("click", async () => {
+        const question = questionInput.value.trim();
+        if (!question || loadingAsk) return;
+
+        loadingAsk = true;
+        askBtn.textContent = "Đang xử lý...";
+        askBtn.disabled = true;
+        responseDiv.innerHTML = "";
+
+        try {
+          const res = await fetch("http://localhost:8000/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ question }),
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            responseDiv.innerHTML = `<strong>🧠 Phản hồi:</strong> <p>${result.answer}</p>`;
+          } else {
+            responseDiv.innerHTML = `<strong>❌ Lỗi:</strong> ${
+              result.error || "Không thể lấy câu trả lời."
+            }`;
+          }
+        } catch (err) {
+          console.error(err);
+          responseDiv.innerHTML =
+            "<strong>❌ Lỗi:</strong> Không thể kết nối tới server.";
+        } finally {
+          loadingAsk = false;
+          askBtn.textContent = "Gửi câu hỏi";
+          askBtn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
