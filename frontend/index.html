@@ -89,7 +89,7 @@
         formData.append("file", file);
 
         try {
-          const res = await fetch("http://localhost:8000/upload", {
+          const res = await fetch("https://ai-project-2o04.onrender.com/upload", {
             method: "POST",
             body: formData,
           });
@@ -124,7 +124,7 @@
         responseDiv.innerHTML = "";
 
         try {
-          const res = await fetch("http://localhost:8000/chat", {
+          const res = await fetch("https://ai-project-2o04.onrender.com/chat", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
