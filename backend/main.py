@@ -59,6 +59,8 @@ async def upload(request: Request, file: UploadFile = File(...)):
         chunks = text_splitter.split_documents(docs)
 
         embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
+        print("OPENAI_API_KEY =", os.getenv("OPENAI_API_KEY"))  # ✅ chỉ để test
+
         db = FAISS.from_documents(chunks, embeddings)
         db.save_local(VECTOR_FOLDER)
 
