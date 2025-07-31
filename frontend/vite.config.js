@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/<tên-repo>/', // ví dụ: '/enterprise-rag-chatbot/'
+  base: '/enterprise-rag-chatbot/', // ví dụ: '/enterprise-rag-chatbot/'
 });
